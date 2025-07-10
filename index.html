@@ -1,0 +1,48 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <meta name="description" content="Jogo da Velha dos Gatos - Divirta-se com seus amigos felinos!" />
+
+  <title>Jogo da Velha dos Gatos 🐱</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/x-icon" href="icon.png" />
+</head>
+<body>
+  <div id="menu">
+  <h1>🐾 Jogo da Velha dos Gatos 🐾</h1>
+  
+
+  <div style="margin-bottom: 20px;">
+    <input type="text" id="nomeX" placeholder="Nome do Gato 1 𓃠" />
+    <br /><br />
+    <input type="text" id="nomeO" placeholder="Nome do Gato 2 🐈‍⬛" />
+  </div>
+
+  <p>Escolha o número de rodadas:</p>
+  <button onclick="startGame(3)">3 Rodadas</button>
+  <button onclick="startGame(5)">5 Rodadas</button>
+</div>
+
+
+  <div id="game" class="hidden">
+    <div class="placar">
+  <div><span id="nomeDisplayX">𓃠 Gato 1</span>: <span id="scoreX">0</span></div>
+
+  <div><span id="nomeDisplayO">🐈‍⬛ Gato 2</span>: <span id="scoreO">0</span></div>
+
+  <div>Rodada: <span id="rodadaAtual">1</span>/<span id="totalRodadas">3</span></div>
+</div>
+
+    <div class="tabuleiro" id="tabuleiro"></div>
+    <div id="mensagem"></div>
+    <button onclick="resetTabuleiro()">Próxima Rodada</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
