@@ -1,0 +1,153 @@
+<!-- frontend/game.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partida - Jogo da Velha 🐾</title>
+  <link rel="icon" type="image/x-icon" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .tabuleiro {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      margin: 20px 0;
+    }
+    .tabuleiro div {
+      width: 100px;
+      height: 100px;
+      background: #222;
+      color: #eee;
+      font-size: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+    }
+    .tabuleiro div:hover {
+      background-color: #444;
+    }
+    .tabuleiro div.disabled {
+      pointer-events: none;
+      background-color: #111;
+      color: #666;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <h1>🎮 Partida em andamento</h1>
+
+    <p>Jogador atual: <strong id="jogadorAtual">Carregando...</strong></p>
+    <div class="tabuleiro" id="tabuleiro"></div>
+    <div id="mensagem" style="margin-top:10px;"></div>
+
+    <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
+  </div>
+
+  <script type="module">
+    import { getToken } from './auth.js';
+
+    const tabuleiroEl = document.getElementById("tabuleiro");
+    const mensagem = document.getElementById("mensagem");
+    const jogadorAtualEl = document.getElementById("jogadorAtual");
+
+    let gameId = new URLSearchParams(window.location.search).get("id");
+    let currentPlayer = null;
+    let gameOver = false;
+    let esperandoResposta = false; // Bloqueia cliques múltiplos
+
+    async function carregarEstado() {
+      try {
+        const res = await fetch(`http://localhost:8080/api/games/${gameId}`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+
+        if (!res.ok) throw new Error('Falha ao carregar estado');
+
+        const data = await res.json();
+        renderizarTabuleiro(data.boardState.split(''));
+        jogadorAtualEl.textContent = data.winner ? "Jogo Encerrado" : data.currentPlayer || "-";
+        mensagem.textContent = data.winner
+          ? `🏆 Vencedor: ${data.winner}`
+          : data.gameOver
+          ? "😼 Empate!"
+          : "";
+        gameOver = data.gameOver;
+        currentPlayer = data.currentPlayer;
+
+        // Atualiza estilos de bloqueio caso jogo terminou
+        atualizarEstadoBotoes();
+      } catch (err) {
+        mensagem.textContent = "Erro ao carregar o jogo.";
+        console.error(err);
+      }
+    }
+
+    function renderizarTabuleiro(casas) {
+      tabuleiroEl.innerHTML = "";
+      casas.forEach((valor, i) => {
+        const casa = document.createElement("div");
+        casa.textContent = valor === '-' ? '' : valor;
+        if (valor !== '-' || gameOver) {
+          casa.classList.add('disabled');
+        } else {
+          casa.classList.remove('disabled');
+        }
+        casa.addEventListener("click", () => fazerJogada(i));
+        tabuleiroEl.appendChild(casa);
+      });
+    }
+
+    function atualizarEstadoBotoes() {
+      const casas = tabuleiroEl.querySelectorAll('div');
+      casas.forEach(casa => {
+        if (gameOver || casa.textContent !== '') {
+          casa.classList.add('disabled');
+        } else {
+          casa.classList.remove('disabled');
+        }
+      });
+    }
+
+    async function fazerJogada(posicao) {
+      if (gameOver || esperandoResposta) return;
+
+      esperandoResposta = true;
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ position: posicao })
+        });
+
+        if (!res.ok) {
+          const erro = await res.json();
+          mensagem.textContent = erro.message || "Erro ao jogar.";
+          esperandoResposta = false;
+          return;
+        }
+
+        await carregarEstado();
+      } catch (err) {
+        mensagem.textContent = "Erro ao fazer jogada.";
+        console.error(err);
+      }
+
+      esperandoResposta = false;
+    }
+
+    carregarEstado();
+    setInterval(carregarEstado, 3000); // Atualiza o jogo a cada 3s
+  </script>
+</body>
+</html>

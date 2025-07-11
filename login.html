@@ -1,0 +1,77 @@
+<!-- frontend/login.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Jogo da Velha dos Gatos 🐾</title>
+  <link rel="icon" type="image/x-icon" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="menu">
+    <h1>🐾 Login dos Gatos</h1>
+
+    <form autocomplete="off" novalidate>
+      <!-- Campos falsos pra bloquear autofill -->
+      <input type="text" name="fakeusernameremembered" autocomplete="off" style="display:none" />
+      <input type="password" name="fakepasswordremembered" autocomplete="off" style="display:none" />
+
+      <div style="margin-bottom: 20px;">
+        <input 
+          type="text" 
+          id="username" 
+          name="usuario" 
+          autocomplete="off" 
+          placeholder="Nome de usuário 🐱" 
+          required 
+        />
+        <br /><br />
+        <input 
+          type="password" 
+          id="password" 
+          name="senha" 
+          autocomplete="new-password" 
+          placeholder="Senha 🐾" 
+          required 
+        />
+      </div>
+
+      <button type="button" onclick="login()">Entrar</button>
+    </form>
+
+    <p>Não tem conta? <a href="register.html" style="color: #f9a825;">Registre-se aqui</a></p>
+    <div id="mensagem" style="margin-top: 20px;"></div>
+  </div>
+
+  <script type="module">
+    import { loginAPI } from './api.js';
+    import { setToken } from './auth.js';
+
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("mensagem");
+
+      msg.textContent = "";
+
+      if (!username || !password) {
+        msg.textContent = "Preencha todos os campos!";
+        msg.style.color = "#ff5252";
+        return;
+      }
+
+      try {
+        const { token } = await loginAPI(username, password);
+        setToken(token);
+        window.location.href = "home.html";
+      } catch (err) {
+        msg.textContent = "Usuário ou senha inválidos.";
+        msg.style.color = "#ff5252";
+      }
+    }
+
+    window.login = login;
+  </script>
+</body>
+</html>
