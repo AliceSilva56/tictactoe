@@ -15,6 +15,9 @@ import java.util.Optional;
 public interface GameRepository extends JpaRepository<Game, Long> {
     List<Game> findByPlayerXOrPlayerOOrderByCreatedAtDesc(User playerX, User playerO);
 
+    @Query("SELECT g FROM Game g WHERE g.playerX = :player OR g.playerO = :player")
+    List<Game> findByPlayerXOrPlayerO(@Param("player") User player);
+
     @Query("SELECT g FROM Game g LEFT JOIN FETCH g.playerX LEFT JOIN FETCH g.playerO WHERE g.id = :id")
     Optional<Game> findByIdWithPlayers(@Param("id") Long id);
 }

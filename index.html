@@ -193,7 +193,6 @@
     <div class="container">
         <h1>Jogo da Velha - Teste de API</h1>
         
-        <!-- Seção de Autenticação -->
         <div class="section">
             <h2 class="section-title">Autenticação</h2>
             <div class="form-group">
@@ -210,7 +209,6 @@
             <div id="auth-response" class="response hidden"></div>
         </div>
         
-        <!-- Seção de Jogo -->
         <div class="section" id="game-section" style="display: none;">
             <h2 class="section-title">Jogo da Velha</h2>
             
@@ -252,7 +250,6 @@
     </div>
 
     <script>
-        // Elementos do DOM
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const btnLogin = document.getElementById('btn-login');
@@ -270,18 +267,15 @@
         const btnGetStats = document.getElementById('btn-get-stats');
         const btnGetRanking = document.getElementById('btn-get-ranking');
         const statsResponse = document.getElementById('stats-response');
-        
-        // Variáveis globais
+
         let currentToken = null;
         let currentGameId = null;
         let currentPlayer = null;
         let currentUsername = null;
         let gameActive = false;
         
-        // Configuração da API
         const API_BASE_URL = 'http://localhost:8081/api';
         
-        // Event Listeners
         btnLogin.addEventListener('click', handleLogin);
         btnRegister.addEventListener('click', handleRegister);
         btnStartGame.addEventListener('click', startNewGame);
@@ -346,10 +340,8 @@
                 const data = await response.json();
                 
                 if (response.ok && data.length > 0) {
-                    // Se houver jogos pendentes, carregar o primeiro
                     const pendingGame = data[0];
                     
-                    // Perguntar ao usuário se deseja carregar o jogo pendente
                     if (confirm(`Você tem um jogo pendente com ${pendingGame.playerX === currentUsername ? pendingGame.playerO : pendingGame.playerX}. Deseja carregar agora?`)) {
                         loadGame(pendingGame.id);
                     }
@@ -359,7 +351,6 @@
             }
         }
         
-        // NOVA FUNÇÃO: Carregar um jogo existente
         async function loadGame(gameId) {
             try {
                 const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
@@ -374,13 +365,8 @@
                     currentGameId = game.id;
                     gameActive = !game.gameOver;
                     
-                    // Determinar se o usuário atual é X ou O
                     currentPlayer = (game.playerX === currentUsername) ? 'X' : 'O';
-                    
-                    // Atualizar interface
                     renderBoard(game.boardState);
-                    
-                    // Atualizar status
                     if (game.gameOver) {
                         gameStatus.innerHTML = `Jogo #${game.id} - Encerrado! ${game.winner ? 'Vencedor: ' + game.winner : 'Empate!'}`;
                         gameStatus.classList.add('game-over');
@@ -403,33 +389,26 @@
 
         async function startNewGame() {
             const opponent = opponentInput.value;
-            
             if (!opponent) {
                 showResponse(gameResponse, 'Por favor, informe o nome do oponente', 'error');
                 return;
             }
-            
             try {
                 const response = await fetch(`${API_BASE_URL}/games/start?opponentUsername=${opponent}`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
-                
                 const data = await response.json();
-                
                 if (response.ok) {
                     currentGameId = data.gameId;
                     gameActive = true;
-                    
                     const playerMatch = data.message.match(/player (\w+)$/);
                     currentPlayer = playerMatch ? playerMatch[1] : 'X';
 
                     renderBoard("         ");
-                    
                     gameStatus.innerHTML = `Jogo #${data.gameId} - ${data.message}`;
-                    
+                    gameStatus.classList.remove('game-over');
+
                     showResponse(gameResponse, JSON.stringify(data, null, 2), 'success');
                 } else {
                     showResponse(gameResponse, `Erro: ${data.message || 'Falha ao iniciar jogo'}`, 'error');
@@ -438,6 +417,7 @@
                 showResponse(gameResponse, `Erro: ${error.message}`, 'error');
             }
         }
+
         
         async function handleRegister() {
             const username = usernameInput.value;
@@ -469,48 +449,6 @@
             }
         }
         
-        async function startNewGame() {
-            const opponent = opponentInput.value;
-            
-            if (!opponent) {
-                showResponse(gameResponse, 'Por favor, informe o nome do oponente', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/games/start?opponentUsername=${opponent}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    currentGameId = data.gameId;  // Alterado de data.id para data.gameId
-                    gameActive = true;
-                    
-                    // Extrair o player da mensagem
-                    const playerMatch = data.message.match(/player (\w+)$/);
-                    currentPlayer = playerMatch ? playerMatch[1] : 'X';
-                    
-                    // Inicializar tabuleiro vazio
-                    renderBoard("         ");
-                    
-                    // Atualizar status com o ID do jogo
-                    gameStatus.innerHTML = `Jogo #${data.gameId} - ${data.message}`;
-                    
-                    showResponse(gameResponse, JSON.stringify(data, null, 2), 'success');
-                } else {
-                    showResponse(gameResponse, `Erro: ${data.message || 'Falha ao iniciar jogo'}`, 'error');
-                }
-            } catch (error) {
-                showResponse(gameResponse, `Erro: ${error.message}`, 'error');
-            }
-        }
-        
-        
         async function makeMove(position) {
             try {
                 const response = await fetch(`${API_BASE_URL}/games/${currentGameId}/move`, {
@@ -527,7 +465,6 @@
                 if (response.ok) {
                     renderBoard(data.board);
                     
-                    // Atualizar status do jogo
                     if (data.gameOver) {
                         gameStatus.innerHTML = `Jogo encerrado! ${data.winner ? 'Vencedor: ' + data.winner : 'Empate!'}`;
                         gameStatus.classList.add('game-over');
@@ -558,31 +495,45 @@
                     }
                 });
                 
+                // Verificar se a resposta está vazia
+                if (response.status === 204) { // No Content
+                    gamesList.innerHTML = '<p>Nenhum jogo encontrado</p>';
+                    gamesList.classList.remove('hidden');
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if (response.ok) {
-                    let html = '<h3>Seus Jogos:</h3><ul>';
-                    data.forEach(game => {
-                        const loadButton = !game.gameOver 
-                            ? `<button onclick="loadGame(${game.id})">Carregar Jogo</button>` 
-                            : '';
-                        
-                        html += `<li>
-                            <strong>Jogo #${game.id}</strong> - 
-                            ${game.playerX} (X) vs ${game.playerO} (O)<br>
-                            Estado: ${game.boardState}<br>
-                            ${game.gameOver ? `Vencedor: ${game.winner || 'Empate'}` : 'Em andamento'}
-                            ${loadButton}
-                        </li>`;
-                    });
-                    html += '</ul>';
+                    let html = '<h3>Seus Jogos:</h3>';
+                    
+                    if (data.length === 0) {
+                        html += '<p>Nenhum jogo encontrado</p>';
+                    } else {
+                        html += '<ul>';
+                        data.forEach(game => {
+                            const loadButton = !game.gameOver 
+                                ? `<button onclick="loadGame(${game.id})" style="margin-top: 5px;">Carregar Jogo</button>` 
+                                : '';
+                            
+                            html += `<li>
+                                <strong>Jogo #${game.id}</strong> - 
+                                ${game.playerX} (X) vs ${game.playerO} (O)<br>
+                                Estado: ${game.boardState}<br>
+                                ${game.gameOver ? `Vencedor: ${game.winner || 'Empate'}` : 'Em andamento'}
+                                ${loadButton}
+                            </li>`;
+                        });
+                        html += '</ul>';
+                    }
                     
                     gamesList.innerHTML = html;
                     gamesList.classList.remove('hidden');
                 } else {
-                    showResponse(gameResponse, `Erro: ${data.message || 'Falha ao carregar jogos'}`, 'error');
+                    showResponse(gameResponse, `Erro: ${data?.message || 'Falha ao carregar jogos'}`, 'error');
                 }
             } catch (error) {
+                console.error('Erro ao carregar jogos:', error);
                 showResponse(gameResponse, `Erro: ${error.message}`, 'error');
             }
         }
@@ -596,24 +547,31 @@
                     }
                 });
                 
+                if (response.status === 204) {
+                    statsResponse.innerHTML = '<p>Nenhuma estatística disponível</p>';
+                    statsResponse.classList.remove('hidden');
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if (response.ok) {
                     const statsHTML = `
                         <h3>Suas Estatísticas:</h3>
                         <p>Usuário: ${data.username}</p>
-                        <p>Vitórias: ${data.victories}</p>
-                        <p>Derrotas: ${data.defeats}</p>
-                        <p>Empates: ${data.draws}</p>
-                        <p>Pontuação: ${data.score}</p>
+                        <p>Vitórias: ${data.victories || 0}</p>
+                        <p>Derrotas: ${data.defeats || 0}</p>
+                        <p>Empates: ${data.draws || 0}</p>
+                        <p>Pontuação: ${data.score || 0}</p>
                     `;
                     
                     statsResponse.innerHTML = statsHTML;
                     statsResponse.classList.remove('hidden');
                 } else {
-                    showResponse(statsResponse, `Erro: ${data.message || 'Falha ao obter estatísticas'}`, 'error');
+                    showResponse(statsResponse, `Erro: ${data?.message || 'Falha ao obter estatísticas'}`, 'error');
                 }
             } catch (error) {
+                console.error('Erro ao obter estatísticas:', error);
                 showResponse(statsResponse, `Erro: ${error.message}`, 'error');
             }
         }
@@ -621,28 +579,43 @@
         async function getRanking() {
             try {
                 const response = await fetch(`${API_BASE_URL}/users/ranking`);
+                
+                // Verificar se a resposta está vazia
+                if (response.status === 204) { // No Content
+                    statsResponse.innerHTML = '<p>Nenhum ranking disponível</p>';
+                    statsResponse.classList.remove('hidden');
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if (response.ok) {
-                    let html = '<h3>Ranking de Jogadores:</h3><ol>';
-                    data.forEach((player, index) => {
-                        const rank = index + 1;
-                        html += `<li>
-                            ${player.username} - 
-                            Pontuação: ${player.score}, 
-                            Vitórias: ${player.victories}, 
-                            Derrotas: ${player.defeats}, 
-                            Empates: ${player.draws}
-                        </li>`;
-                    });
-                    html += '</ol>';
+                    let html = '<h3>Ranking de Jogadores:</h3>';
+                    
+                    if (data.length === 0) {
+                        html += '<p>Nenhum jogador no ranking</p>';
+                    } else {
+                        html += '<ol>';
+                        data.forEach((player, index) => {
+                            const rank = index + 1;
+                            html += `<li>
+                                ${player.username} - 
+                                Pontuação: ${player.score || 0}, 
+                                Vitórias: ${player.victories || 0}, 
+                                Derrotas: ${player.defeats || 0}, 
+                                Empates: ${player.draws || 0}
+                            </li>`;
+                        });
+                        html += '</ol>';
+                    }
                     
                     statsResponse.innerHTML = html;
                     statsResponse.classList.remove('hidden');
                 } else {
-                    showResponse(statsResponse, `Erro: ${data.message || 'Falha ao obter ranking'}`, 'error');
+                    showResponse(statsResponse, `Erro: ${data?.message || 'Falha ao obter ranking'}`, 'error');
                 }
             } catch (error) {
+                console.error('Erro ao obter ranking:', error);
                 showResponse(statsResponse, `Erro: ${error.message}`, 'error');
             }
         }

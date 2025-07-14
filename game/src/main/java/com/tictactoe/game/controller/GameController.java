@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -102,6 +103,12 @@ public class GameController {
 
             if (gameState.gameOver()) {
                 updatePlayerStats(game, gameState.winner());
+                return ResponseEntity.ok(new GameStateDTO(
+                        gameState.board(),
+                        gameState.winner(),
+                        gameState.winner(),
+                        gameState.gameOver()
+                ));
             }
 
             return ResponseEntity.ok(gameState);
@@ -114,6 +121,40 @@ public class GameController {
     private String determineCurrentPlayerSymbol(Game game) {
         long movesCount = game.getBoardState().chars().filter(c -> c != ' ').count();
         return movesCount % 2 == 0 ? "X" : "O";
+    }
+
+    @GetMapping
+    public ResponseEntity<?> listGames(Authentication authentication) {
+        try {
+            User currentUser = userService.findByUsername(authentication.getName());
+            List<Game> games = gameRepository.findByPlayerXOrPlayerO(currentUser);
+            return ResponseEntity.ok(games);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error listing games");
+        }
+    }
+
+    @GetMapping("/{gameId}")
+    public ResponseEntity<?> getGameDetails(
+            Authentication authentication,
+            @PathVariable Long gameId
+    ) {
+        try {
+            User currentUser = userService.findByUsername(authentication.getName());
+            Game game = gameRepository.findByIdWithPlayers(gameId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Game not found"));
+
+            if (!currentUser.getId().equals(game.getPlayerX().getId()) &&
+                    !currentUser.getId().equals(game.getPlayerO().getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+            }
+
+            return ResponseEntity.ok(game);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error fetching game");
+        }
     }
 
     private void updatePlayerStats(Game game, String winner) {

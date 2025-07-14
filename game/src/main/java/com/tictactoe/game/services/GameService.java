@@ -23,24 +23,19 @@ public class GameService {
         Game game = new Game();
         game.setPlayerX(playerX);
         game.setPlayerO(playerO);
-        game.setBoardState("         "); // Tabuleiro vazio com 9 espaços
+        game.setBoardState("         ");
         return gameRepository.save(game);
     }
 
     public GameStateDTO makeMove(Game game, int position, String player) {
         char[] board = game.getBoardState().toCharArray();
 
-        // Log para depuração
-        log.debug("Making move - Game: {}, Position: {}, Player: {}, Board: {}",
-                game.getId(), position, player, game.getBoardState());
-
         if (board[position] != ' ') {
             throw new IllegalArgumentException("Position already occupied");
         }
 
         board[position] = player.charAt(0);
-        String newBoardState = new String(board);
-        game.setBoardState(newBoardState);
+        game.setBoardState(new String(board));
 
         String winner = checkWinner(board);
 
@@ -51,13 +46,9 @@ public class GameService {
         game.setWinner(winner);
         gameRepository.save(game);
 
-        // Log do resultado
-        log.debug("Move result - Game: {}, Winner: {}, Board: {}",
-                game.getId(), winner, newBoardState);
-
         return new GameStateDTO(
                 convertTo3x3Board(board),
-                winner == null ? (player.equals("X") ? "O" : "X") : null,
+                winner != null ? winner : (player.equals("X") ? "O" : "X"),
                 winner,
                 winner != null
         );
