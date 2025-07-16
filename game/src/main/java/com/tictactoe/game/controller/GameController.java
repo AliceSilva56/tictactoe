@@ -1,6 +1,7 @@
 package com.tictactoe.game.controller;
 
 import com.tictactoe.game.dtos.game.GameMoveDTO;
+import com.tictactoe.game.dtos.game.GameStartResponseDTO;
 import com.tictactoe.game.dtos.game.GameStateDTO;
 import com.tictactoe.game.exceptions.ResourceNotFoundException;
 import com.tictactoe.game.entities.Game;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +54,11 @@ public class GameController {
 
             Game game = gameService.createGame(currentUser, opponent);
 
-            return ResponseEntity.ok(Map.of(
-                    "gameId", game.getId(),
-                    "message", "Game started! You are player X"
+            return ResponseEntity.ok(new GameStartResponseDTO(
+                    game.getId(),
+                    currentUser.getUsername(),
+                    opponent.getUsername(),
+                    "Game started! You are player X"
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -99,19 +103,27 @@ public class GameController {
                 return ResponseEntity.badRequest().body("Invalid position (must be between 0-8)");
             }
 
-            GameStateDTO gameState = gameService.makeMove(game, moveDTO.position(), currentPlayerSymbol);
+            GameStateDTO gameState = gameService.makeMove(
+                    game,
+                    moveDTO.position(),
+                    currentPlayerSymbol
+            );
+
+            GameStateDTO enhancedState = new GameStateDTO(
+                    gameState.board(),
+                    gameState.currentPlayer(),
+                    gameState.winner(),
+                    gameState.gameOver(),
+                    game.getPlayerX().getUsername(),
+                    game.getPlayerO().getUsername()
+            );
 
             if (gameState.gameOver()) {
                 updatePlayerStats(game, gameState.winner());
-                return ResponseEntity.ok(new GameStateDTO(
-                        gameState.board(),
-                        gameState.winner(),
-                        gameState.winner(),
-                        gameState.gameOver()
-                ));
+                return ResponseEntity.ok(enhancedState);
             }
 
-            return ResponseEntity.ok(gameState);
+            return ResponseEntity.ok(enhancedState);
         } catch (Exception e) {
             log.error("Move error", e);
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -128,7 +140,18 @@ public class GameController {
         try {
             User currentUser = userService.findByUsername(authentication.getName());
             List<Game> games = gameRepository.findByPlayerXOrPlayerO(currentUser);
-            return ResponseEntity.ok(games);
+
+            List<Map<String, Object>> gameDTOs = games.stream().map(game -> {
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", game.getId());
+                dto.put("playerX", game.getPlayerX().getUsername());
+                dto.put("playerO", game.getPlayerO().getUsername());
+                dto.put("winner", game.getWinner());
+                dto.put("currentPlayer", determineCurrentPlayerSymbol(game));
+                return dto;
+            }).toList();
+
+            return ResponseEntity.ok(gameDTOs);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error listing games");
         }
@@ -149,7 +172,15 @@ public class GameController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
             }
 
-            return ResponseEntity.ok(game);
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", game.getId());
+            response.put("boardState", game.getBoardState());
+            response.put("winner", game.getWinner());
+            response.put("playerX", game.getPlayerX().getUsername());
+            response.put("playerO", game.getPlayerO().getUsername());
+            response.put("currentPlayer", determineCurrentPlayerSymbol(game));
+
+            return ResponseEntity.ok(response);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {

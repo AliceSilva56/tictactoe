@@ -4,6 +4,8 @@ public record GameStateDTO(
         String[] board,
         String currentPlayer,
         String winner,
-        boolean gameOver
+        boolean gameOver,
+        String playerX,
+        String playerO
 ) {}
 

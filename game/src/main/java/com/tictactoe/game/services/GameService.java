@@ -50,7 +50,9 @@ public class GameService {
                 convertTo3x3Board(board),
                 winner != null ? winner : (player.equals("X") ? "O" : "X"),
                 winner,
-                winner != null
+                winner != null,
+                null,
+                null
         );
     }
 
