@@ -1,0 +1,49 @@
+<!-- frontend/stats.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estatísticas - Jogo da Velha 🐾</title>
+  <link rel="icon" type="image/x-icon" href="assets/icon.png" />
+  <link rel="stylesheet" href="styleDarkTech.css" />
+</head>
+<body>
+  <div id="menu">
+    <h1>📊 Minhas Estatísticas</h1>
+    <div id="dados" style="margin-top: 20px;"></div>
+    <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
+  </div>
+
+  <script type="module">
+    import { getToken } from './auth.js';
+
+    const dados = document.getElementById("dados");
+
+    async function carregarEstatisticas() {
+      try {
+        const res = await fetch("http://localhost:8080/api/users/me/stats", {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+
+        if (!res.ok) throw new Error("Erro ao buscar estatísticas");
+
+        const data = await res.json();
+
+        dados.innerHTML = `
+          <p><strong>Usuário:</strong> ${data.username}</p>
+          <p><strong>Vitórias:</strong> ${data.victories}</p>
+          <p><strong>Derrotas:</strong> ${data.defeats}</p>
+          <p><strong>Empates:</strong> ${data.draws}</p>
+          <p><strong>Pontuação:</strong> ${data.score}</p>
+        `;
+      } catch (err) {
+        dados.innerHTML = "<p>Erro ao carregar estatísticas.</p>";
+        console.error(err);
+      }
+    }
+
+    carregarEstatisticas();
+  </script>
+</body>
+</html>

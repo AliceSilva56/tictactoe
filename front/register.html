@@ -1,0 +1,81 @@
+<!-- frontend/register.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro - Jogo da Velha dos Gatos 🐾</title>
+  <link rel="icon" type="image/x-icon" href="assets/icon.png" />
+  <link rel="stylesheet" href="styleDarkTech.css" />
+</head>
+<body>
+  <div id="menu">
+    <h1>😺 Criar Conta</h1>
+
+    <form autocomplete="off" novalidate>
+      <!-- Campos falsos escondidos para bloquear autofill -->
+      <input type="text" name="fakeusernameremembered" autocomplete="off" style="display:none" />
+      <input type="password" name="fakepasswordremembered" autocomplete="off" style="display:none" />
+
+      <div style="margin-bottom: 20px;">
+        <input 
+          type="text" 
+          id="username" 
+          name="usuario" 
+          autocomplete="off" 
+          placeholder="Nome de usuário 🐱" 
+          required
+        />
+        <br /><br />
+        <input 
+          type="password" 
+          id="password" 
+          name="senha" 
+          autocomplete="new-password" 
+          placeholder="Senha 🐾" 
+          required
+        />
+      </div>
+      
+      <button type="button" onclick="register()">Registrar</button>
+    </form>
+
+    <p>Já tem conta? <a href="login.html" style="color: #f9a825;">Faça login</a></p>
+    <div id="mensagem" style="margin-top: 20px;"></div>
+  </div>
+
+  <script type="module">
+    import { registerAPI } from './api.js';
+    import { setToken } from './auth.js';
+
+    async function register() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("mensagem");
+
+      msg.textContent = "";
+
+      if (!username || !password) {
+        msg.textContent = "Preencha todos os campos!";
+        msg.style.color = "#ff5252";
+        return;
+      }
+
+      try {
+        await registerAPI(username, password);
+        msg.textContent = "Registro concluído! Redirecionando...";
+        msg.style.color = "#00e676";
+
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 2000);
+      } catch (err) {
+        msg.textContent = "Erro ao registrar. Tente outro nome.";
+        msg.style.color = "#ff5252";
+      }
+    }
+
+    window.register = register;
+  </script>
+</body>
+</html>

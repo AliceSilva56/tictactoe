@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo da Velha dos Gatos</title>
+  <link rel="stylesheet" href="styleDarkTech.css" />
+  <link rel="icon" type="image/x-icon" href="assets/icon.png" />
+  <!--<style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #menu, #game {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px #00cfffaa;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      background: #333;
+      color: #eee;
+    }
+    button {
+      background: #00cfff;
+      border: none;
+      color: #121212;
+      font-weight: bold;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #0099cc;
+      color: #fff;
+    }
+    .hidden {
+      display: none;
+    }
+    .tabuleiro {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .tabuleiro div {
+      width: 100px;
+      height: 100px;
+      background: #333;
+      color: #00cfff;
+      font-size: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 6px #00cfffaa inset;
+      transition: background-color 0.3s ease;
+    }
+    .tabuleiro div:hover {
+      background-color: #005f7f;
+    }
+    .tabuleiro div.disabled {
+      pointer-events: none;
+      background-color: #111;
+      color: #004455;
+      cursor: default;
+      box-shadow: none;
+    }
+    .placar {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+    #mensagem {
+      min-height: 1.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #f9a825;
+    }
+  </style> !-->
+</head>
+<body>
+
+  <div id="menu">
+    <h1>🐾 Jogo da Velha dos Gatos 🐾</h1>
+
+    <input type="text" id="nomeX" placeholder="Nome do Gato 1 𓃠" />
+    <input type="text" id="nomeO" placeholder="Nome do Gato 2 🐈‍⬛" />
+
+    <p>Escolha o número de rodadas:</p>
+    <button onclick="startGame(3)">3 Rodadas</button>
+    <button onclick="startGame(5)">5 Rodadas</button>
+  </div>
+
+  <div id="game" class="hidden">
+    <div class="placar">
+      <div><span id="nomeDisplayX">𓃠 Gato 1</span>: <span id="scoreX">0</span></div>
+      <div><span id="nomeDisplayO">🐈‍⬛ Gato 2</span>: <span id="scoreO">0</span></div>
+      <div>Rodada: <span id="rodadaAtual">1</span>/<span id="totalRodadas">3</span></div>
+    </div>
+
+    <div class="tabuleiro" id="tabuleiro"></div>
+    <div id="mensagem"></div>
+    <button id="btnNextRound" onclick="nextRound()" disabled>Próxima Rodada</button>
+    <button onclick="endGame()" style="margin-top:10px; background:#f44336; color:#fff;">Encerrar Jogo</button>
+  </div>
+
+  <script>
+    const menuEl = document.getElementById('menu');
+    const gameEl = document.getElementById('game');
+    const tabuleiroEl = document.getElementById('tabuleiro');
+    const mensagemEl = document.getElementById('mensagem');
+    const btnNextRound = document.getElementById('btnNextRound');
+
+    const nomeXInput = document.getElementById('nomeX');
+    const nomeOInput = document.getElementById('nomeO');
+
+    const nomeDisplayX = document.getElementById('nomeDisplayX');
+    const nomeDisplayO = document.getElementById('nomeDisplayO');
+
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+
+    const rodadaAtualEl = document.getElementById('rodadaAtual');
+    const totalRodadasEl = document.getElementById('totalRodadas');
+
+    let rodadaAtual = 1;
+    let totalRodadas = 3;
+    let scoreX = 0;
+    let scoreO = 0;
+    let currentPlayer = 'X';
+    let board = Array(9).fill('');
+    let gameOver = false;
+
+    function startGame(rodadas) {
+      const nomeX = nomeXInput.value.trim() || '𓃠 Gato 1';
+      const nomeO = nomeOInput.value.trim() || '🐈‍⬛ Gato 2';
+
+      nomeDisplayX.textContent = nomeX;
+      nomeDisplayO.textContent = nomeO;
+
+      rodadaAtual = 1;
+      totalRodadas = rodadas;
+      scoreX = 0;
+      scoreO = 0;
+      currentPlayer = 'X';
+      board = Array(9).fill('');
+      gameOver = false;
+
+      scoreXEl.textContent = scoreX;
+      scoreOEl.textContent = scoreO;
+      rodadaAtualEl.textContent = rodadaAtual;
+      totalRodadasEl.textContent = totalRodadas;
+      mensagemEl.textContent = `${nomeX} começa jogando!`;
+
+      renderBoard();
+
+      menuEl.classList.add('hidden');
+      gameEl.classList.remove('hidden');
+      btnNextRound.disabled = true;
+    }
+
+    function renderBoard() {
+      tabuleiroEl.innerHTML = '';
+      board.forEach((cell, idx) => {
+        const cellEl = document.createElement('div');
+        cellEl.textContent = cell;
+        if(cell !== '' || gameOver) {
+          cellEl.classList.add('disabled');
+        }
+        cellEl.addEventListener('click', () => makeMove(idx));
+        tabuleiroEl.appendChild(cellEl);
+      });
+    }
+
+    function makeMove(pos) {
+      if (gameOver || board[pos] !== '') return;
+
+      board[pos] = currentPlayer;
+      renderBoard();
+
+      if (checkWin(currentPlayer)) {
+        mensagemEl.textContent = `🏆 ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent} venceu a rodada!`;
+        gameOver = true;
+        updateScore(currentPlayer);
+        btnNextRound.disabled = false;
+      } else if (board.every(c => c !== '')) {
+        mensagemEl.textContent = '😼 Empate na rodada!';
+        gameOver = true;
+        btnNextRound.disabled = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        mensagemEl.textContent = `Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
+      }
+      updateScoreDisplay();
+    }
+
+    function checkWin(player) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8], // linhas
+        [0,3,6],[1,4,7],[2,5,8], // colunas
+        [0,4,8],[2,4,6]          // diagonais
+      ];
+      return wins.some(combo => combo.every(i => board[i] === player));
+    }
+
+    function updateScore(player) {
+      if(player === 'X') scoreX++;
+      else scoreO++;
+    }
+
+    function updateScoreDisplay() {
+      scoreXEl.textContent = scoreX;
+      scoreOEl.textContent = scoreO;
+    }
+
+    function nextRound() {
+      if (rodadaAtual >= totalRodadas) {
+        mensagemEl.textContent = '🎉 Jogo finalizado! Recarregue para jogar novamente.';
+        btnNextRound.disabled = true;
+        return;
+      }
+      rodadaAtual++;
+      rodadaAtualEl.textContent = rodadaAtual;
+      board = Array(9).fill('');
+      gameOver = false;
+      currentPlayer = rodadaAtual % 2 === 1 ? 'X' : 'O'; // alterna quem começa
+      mensagemEl.textContent = `Rodada ${rodadaAtual} - Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
+      renderBoard();
+      btnNextRound.disabled = true;
+    }
+
+    function endGame() {
+      menuEl.classList.remove('hidden');
+      gameEl.classList.add('hidden');
+      mensagemEl.textContent = '';
+    }
+  </script>
+
+</body>
+</html>

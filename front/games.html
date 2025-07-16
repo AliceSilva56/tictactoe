@@ -1,0 +1,57 @@
+<!-- frontend/games.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partidas Anteriores - Jogo da Velha 🐾</title>
+  <link rel="stylesheet" href="styleDarkTech.css" />
+  <link rel="icon" type="image/x-icon" href="assets/icon.png" />
+</head>
+<body>
+  <div id="menu">
+    <h1>🕹️ Suas Partidas</h1>
+    <div id="listaPartidas" style="margin-top: 20px;"></div>
+    <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
+  </div>
+
+  <script type="module">
+    import { getToken } from './auth.js';
+
+    const lista = document.getElementById("listaPartidas");
+
+    async function carregarPartidas() {
+      try {
+        const res = await fetch("http://localhost:8080/api/games", {
+          headers: { Authorization: `Bearer ${getToken()}` }
+        });
+
+        const data = await res.json();
+        if (!data.length) {
+          lista.innerHTML = "<p>Você ainda não participou de nenhuma partida.</p>";
+          return;
+        }
+
+        lista.innerHTML = data.map(game => `
+          <div style="margin-bottom: 15px; padding: 10px; background-color: #424549; border-radius: 12px;">
+            <p><strong>ID:</strong> ${game.id}</p>
+            <p><strong>${game.playerX}</strong> (X) vs <strong>${game.playerO}</strong> (O)</p>
+            <p><strong>Vencedor:</strong> ${game.winner || 'Empate'}</p>
+            <p><strong>Data:</strong> ${new Date(game.createdAt).toLocaleString()}</p>
+            <button onclick="abrirJogo(${game.id})">▶️ Ver Partida</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        lista.innerHTML = "<p>Erro ao carregar partidas.</p>";
+        console.error(err);
+      }
+    }
+
+    window.abrirJogo = (id) => {
+      window.location.href = `game.html?id=${id}`;
+    };
+
+    carregarPartidas();
+  </script>
+</body>
+</html>

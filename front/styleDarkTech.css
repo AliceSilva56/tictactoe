@@ -1,0 +1,122 @@
+/* Dark Tech vibes */
+body {
+  background: #0D0D0D;
+  color: #00CFFF;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+header {
+  padding: 1.5rem;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #39FF14;
+  text-shadow: 0 0 8px #45d72a;
+}
+
+#menu {
+  background: #111;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 207, 255, 0.3);
+  max-width: 600px;
+  width: 90%;
+  margin: 2rem auto;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+}
+
+input {
+  background: #1e1e1e;
+  color: #00CFFF;
+}
+
+button {
+  background: #00CFFF;
+  color: #0D0D0D;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #0099cc;
+  color: white;
+}
+
+.tabuleiro {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.tabuleiro div {
+  width: 100px;
+  height: 100px;
+  background: #333;
+  color: #00CFFF;
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 0 6px #00cfffaa inset;
+  transition: background-color 0.3s ease;
+}
+
+.tabuleiro div:hover {
+  background-color: #005f7f;
+}
+
+.tabuleiro div.disabled {
+  pointer-events: none;
+  background-color: #111;
+  color: #004455;
+  cursor: default;
+  box-shadow: none;
+}
+
+footer {
+  margin-top: auto;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #004d66;
+}
+
+a {
+  color: #39FF14;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 400px) {
+  body {
+    font-size: 0.9rem;
+  }
+  .tabuleiro div {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+}
