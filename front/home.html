@@ -1,13 +1,23 @@
 <!-- frontend/home.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Menu Principal - Jogo da Velha 🐾</title>
   <link rel="icon" type="image/x-icon" href="assets/icon.png" />
   <link rel="stylesheet" href="styleDarkTech.css" />
+
+  <style>
+    body {
+      padding-top: 60px;
+      /* Espaço no topo */
+      box-sizing: border-box;
+    }
+  </style>
 </head>
+
 <body>
   <div id="menu">
     <h1>😺 Bem-vindo ao Jogo da Velha</h1>
@@ -26,10 +36,11 @@
 
     document.getElementById("boasVindas").textContent = `Olá, ${getUsername()}! 🐱`;
 
-    window.logout = async function() {
+    window.logout = async function () {
       await logoutModule();
       window.location.href = "login.html";
     };
   </script>
 </body>
+
 </html>

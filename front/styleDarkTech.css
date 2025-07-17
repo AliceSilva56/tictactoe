@@ -57,41 +57,7 @@ button:hover {
   color: white;
 }
 
-.tabuleiro {
-  display: grid;
-  grid-template-columns: repeat(3, 100px);
-  grid-gap: 10px;
-  justify-content: center;
-  margin: 20px 0;
-}
 
-.tabuleiro div {
-  width: 100px;
-  height: 100px;
-  background: #333;
-  color: #00CFFF;
-  font-size: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  cursor: pointer;
-  user-select: none;
-  box-shadow: 0 0 6px #00cfffaa inset;
-  transition: background-color 0.3s ease;
-}
-
-.tabuleiro div:hover {
-  background-color: #005f7f;
-}
-
-.tabuleiro div.disabled {
-  pointer-events: none;
-  background-color: #111;
-  color: #004455;
-  cursor: default;
-  box-shadow: none;
-}
 
 footer {
   margin-top: auto;

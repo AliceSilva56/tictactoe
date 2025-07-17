@@ -7,11 +7,13 @@
   <title>Estatísticas - Jogo da Velha 🐾</title>
   <link rel="icon" type="image/x-icon" href="assets/icon.png" />
   <link rel="stylesheet" href="styleDarkTech.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="menu">
     <h1>📊 Minhas Estatísticas</h1>
     <div id="dados" style="margin-top: 20px;"></div>
+    <canvas id="graficoStats" width="300" height="300" style="margin-top: 30px;"></canvas>
     <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
   </div>
 
@@ -37,6 +39,29 @@
           <p><strong>Empates:</strong> ${data.draws}</p>
           <p><strong>Pontuação:</strong> ${data.score}</p>
         `;
+
+        // Gráfico de pizza
+        const ctx = document.getElementById('graficoStats');
+        new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['Vitórias', 'Derrotas', 'Empates'],
+            datasets: [{
+              data: [data.victories, data.defeats, data.draws],
+              backgroundColor: ['#00ff88', '#ff4d4d', '#ffcc00'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              }
+            }
+          }
+        });
       } catch (err) {
         dados.innerHTML = "<p>Erro ao carregar estatísticas.</p>";
         console.error(err);

@@ -58,6 +58,41 @@
   text-align: right;
 }
 
+.tabuleiro {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap: 10px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.tabuleiro div {
+  width: 100px;
+  height: 100px;
+ background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  border: 2px solid #00CFFF;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00cfffaa inset;
+  transition: background-color 0.3s ease;
+}
+
+.tabuleiro div.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+   background-color: #111;
+  color: #004455;
+  cursor: default;
+  box-shadow: none;
+}
+.tabuleiro div:hover {
+  background-color: #005f7f;
+}
+
   </style>
 </head>
 <body>
@@ -166,7 +201,20 @@
       tabuleiroEl.innerHTML = '';
       board.forEach((cell, idx) => {
         const cellEl = document.createElement('div');
-        cellEl.textContent = cell;
+        if (cell === 'X') {
+  const img = document.createElement('img');
+  img.src = 'assets/gatoB.png';
+  img.alt = 'Gato Branco';
+  img.style.width = '50px';
+  cellEl.appendChild(img);
+} else if (cell === 'O') {
+  const img = document.createElement('img');
+  img.src = 'assets/gatoP.png';
+  img.alt = 'Gato Preto';
+  img.style.width = '50px';
+  cellEl.appendChild(img);
+}
+
         if (cell !== '' || gameOver) {
           cellEl.classList.add('disabled');
         }
