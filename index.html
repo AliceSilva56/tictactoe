@@ -274,7 +274,7 @@
         let currentUsername = null;
         let gameActive = false;
         
-        const API_BASE_URL = 'http://localhost:8081/api';
+        const API_BASE_URL = 'https://tictactoe-ed8r.onrender.com/api';
         
         btnLogin.addEventListener('click', handleLogin);
         btnRegister.addEventListener('click', handleRegister);
@@ -366,6 +366,11 @@
                     gameActive = !game.gameOver;
                     
                     currentPlayer = (game.playerX === currentUsername) ? 'X' : 'O';
+                    console.log('game.playerX:', game.playerX);
+                    console.log('currentUsername:', currentUsername);
+                    console.log('Comparison:', game.playerX === currentUsername);
+                    currentPlayer = (game.playerX === currentUsername) ? 'X' : 'O';
+                    console.log('currentPlayer:', currentPlayer);
                     renderBoard(game.boardState);
                     if (game.gameOver) {
                         gameStatus.innerHTML = `Jogo #${game.id} - Encerrado! ${game.winner ? 'Vencedor: ' + game.winner : 'Empate!'}`;
@@ -474,7 +479,13 @@
                             alert(`Jogo encerrado! ${data.winner ? 'Vencedor: ' + data.winner : 'Empate!'}`);
                         }, 500);
                     } else {
-                        gameStatus.innerHTML = `Próximo jogador: <span class="active-player">${data.nextPlayer}</span>`;
+                        const nextPlayerName = data.currentPlayer === 'X' 
+                            ? data.playerX 
+                            : data.playerO;
+                        
+                        const isMyTurn = nextPlayerName === currentUsername;
+                        
+                        gameStatus.innerHTML = `Próximo jogador: <span class="active-player ${isMyTurn ? 'your-turn' : ''}">${nextPlayerName} (${data.currentPlayer})</span>`;
                         gameStatus.classList.remove('game-over');
                     }
                     
