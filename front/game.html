@@ -1,153 +1,242 @@
-<!-- frontend/game.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Partida - Jogo da Velha 🐾</title>
+  <title>Jogo da Velha dos Gatos 🐾</title>
   <link rel="icon" type="image/x-icon" href="assets/icon.png" />
   <link rel="stylesheet" href="styleDarkTech.css" />
+
   <style>
-    .tabuleiro {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-gap: 10px;
-      margin: 20px 0;
+
+    body {
+  padding-top: 60px; /* Espaço no topo */
+  box-sizing: border-box;
+}
+
+    .loader {
+      font-size: 2rem;
+      color: #00CFFF;
+      text-shadow: 0 0 8px #00CFFF;
+      animation: pulse 1s infinite alternate;
+      margin-top: 30vh;
+      text-align: center;
     }
-    .tabuleiro div {
-      width: 100px;
-      height: 100px;
-      background: #222;
-      color: #eee;
-      font-size: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      border-radius: 10px;
-      transition: background-color 0.3s ease;
+
+    @keyframes pulse {
+      from { opacity: 0.3; }
+      to   { opacity: 1; }
     }
-    .tabuleiro div:hover {
-      background-color: #444;
+
+    #menu, #game {
+      display: none;
     }
-    .tabuleiro div.disabled {
-      pointer-events: none;
-      background-color: #111;
-      color: #666;
-      cursor: default;
-    }
+.placar-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.placar {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 1.1rem;
+}
+
+#mensagem {
+  flex: 1;
+  color: #f9a825;
+  font-weight: bold;
+  text-shadow: 0 0 6px #f9a825aa;
+  min-width: 150px;
+  text-align: right;
+}
+
   </style>
 </head>
 <body>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">⌛ Carregando...</div>
+
+  <!-- Tela de Escolha de Jogadores e Rodadas -->
   <div id="menu">
-    <h1>🎮 Partida em andamento</h1>
+    <h1>🐾 Jogo da Velha dos Gatos 🐾</h1>
+    <input type="text" id="nomeX" placeholder="Nome do Gato 1 𓃠" />
+    <input type="text" id="nomeO" placeholder="Nome do Gato 2 🐈‍⬛" />
 
-    <p>Jogador atual: <strong id="jogadorAtual">Carregando...</strong></p>
-    <div class="tabuleiro" id="tabuleiro"></div>
-    <div id="mensagem" style="margin-top:10px;"></div>
-
+    <p>Escolha o número de rodadas:</p>
+    <button onclick="startGame(3)">3 Rodadas</button>
+    <button onclick="startGame(5)">5 Rodadas</button>
+    <br><br>
     <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
   </div>
 
-  <script type="module">
-    import { getToken } from './auth.js';
+  <!-- Tela da Partida -->
+  <div id="game">
+  <div class="placar-wrapper">
+    <div class="placar">
+      <div><span id="nomeDisplayX">𓃠 Gato 1</span>: <span id="scoreX">0</span></div>
+      <div><span id="nomeDisplayO">🐈‍⬛ Gato 2</span>: <span id="scoreO">0</span></div>
+      <div>Rodada: <span id="rodadaAtual">1</span>/<span id="totalRodadas">3</span></div>
+    </div>
+    <div id="mensagem">⌛ Aguardando...</div>
+  </div>
 
-    const tabuleiroEl = document.getElementById("tabuleiro");
-    const mensagem = document.getElementById("mensagem");
-    const jogadorAtualEl = document.getElementById("jogadorAtual");
 
-    let gameId = new URLSearchParams(window.location.search).get("id");
-    let currentPlayer = null;
+    <div class="tabuleiro" id="tabuleiro"></div>
+    
+    <button id="btnNextRound" onclick="nextRound()" disabled>Próxima Rodada</button>
+    <button onclick="endGame()" style="margin-top:10px; background:#f44336; color:#fff;">Encerrar Jogo</button>
+  </div>
+
+  <script>
+    // Mostra loader por 1.5s antes de exibir o menu
+    window.addEventListener('DOMContentLoaded', () => {
+      const loader = document.getElementById('loader');
+      const menu = document.getElementById('menu');
+
+      setTimeout(() => {
+        loader.style.display = 'none';
+        menu.style.display = 'block';
+      }, 1500);
+    });
+
+    const menuEl = document.getElementById('menu');
+    const gameEl = document.getElementById('game');
+    const tabuleiroEl = document.getElementById('tabuleiro');
+    const mensagemEl = document.getElementById('mensagem');
+    const btnNextRound = document.getElementById('btnNextRound');
+
+    const nomeXInput = document.getElementById('nomeX');
+    const nomeOInput = document.getElementById('nomeO');
+
+    const nomeDisplayX = document.getElementById('nomeDisplayX');
+    const nomeDisplayO = document.getElementById('nomeDisplayO');
+
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+
+    const rodadaAtualEl = document.getElementById('rodadaAtual');
+    const totalRodadasEl = document.getElementById('totalRodadas');
+
+    let rodadaAtual = 1;
+    let totalRodadas = 3;
+    let scoreX = 0;
+    let scoreO = 0;
+    let currentPlayer = 'X';
+    let board = Array(9).fill('');
     let gameOver = false;
-    let esperandoResposta = false; // Bloqueia cliques múltiplos
 
-    async function carregarEstado() {
-      try {
-        const res = await fetch(`http://localhost:8080/api/games/${gameId}`, {
-          headers: { Authorization: `Bearer ${getToken()}` }
-        });
+    function startGame(rodadas) {
+      const nomeX = nomeXInput.value.trim() || '𓃠 Gato 1';
+      const nomeO = nomeOInput.value.trim() || '🐈‍⬛ Gato 2';
 
-        if (!res.ok) throw new Error('Falha ao carregar estado');
+      nomeDisplayX.textContent = nomeX;
+      nomeDisplayO.textContent = nomeO;
 
-        const data = await res.json();
-        renderizarTabuleiro(data.boardState.split(''));
-        jogadorAtualEl.textContent = data.winner ? "Jogo Encerrado" : data.currentPlayer || "-";
-        mensagem.textContent = data.winner
-          ? `🏆 Vencedor: ${data.winner}`
-          : data.gameOver
-          ? "😼 Empate!"
-          : "";
-        gameOver = data.gameOver;
-        currentPlayer = data.currentPlayer;
+      rodadaAtual = 1;
+      totalRodadas = rodadas;
+      scoreX = 0;
+      scoreO = 0;
+      currentPlayer = 'X';
+      board = Array(9).fill('');
+      gameOver = false;
 
-        // Atualiza estilos de bloqueio caso jogo terminou
-        atualizarEstadoBotoes();
-      } catch (err) {
-        mensagem.textContent = "Erro ao carregar o jogo.";
-        console.error(err);
-      }
+      scoreXEl.textContent = scoreX;
+      scoreOEl.textContent = scoreO;
+      rodadaAtualEl.textContent = rodadaAtual;
+      totalRodadasEl.textContent = totalRodadas;
+      mensagemEl.textContent = `${nomeX} começa jogando!`;
+
+      renderBoard();
+
+      menuEl.style.display = 'none';
+      gameEl.style.display = 'block';
+      btnNextRound.disabled = true;
     }
 
-    function renderizarTabuleiro(casas) {
-      tabuleiroEl.innerHTML = "";
-      casas.forEach((valor, i) => {
-        const casa = document.createElement("div");
-        casa.textContent = valor === '-' ? '' : valor;
-        if (valor !== '-' || gameOver) {
-          casa.classList.add('disabled');
-        } else {
-          casa.classList.remove('disabled');
+    function renderBoard() {
+      tabuleiroEl.innerHTML = '';
+      board.forEach((cell, idx) => {
+        const cellEl = document.createElement('div');
+        cellEl.textContent = cell;
+        if (cell !== '' || gameOver) {
+          cellEl.classList.add('disabled');
         }
-        casa.addEventListener("click", () => fazerJogada(i));
-        tabuleiroEl.appendChild(casa);
+        cellEl.addEventListener('click', () => makeMove(idx));
+        tabuleiroEl.appendChild(cellEl);
       });
     }
 
-    function atualizarEstadoBotoes() {
-      const casas = tabuleiroEl.querySelectorAll('div');
-      casas.forEach(casa => {
-        if (gameOver || casa.textContent !== '') {
-          casa.classList.add('disabled');
-        } else {
-          casa.classList.remove('disabled');
-        }
-      });
-    }
+    function makeMove(pos) {
+      if (gameOver || board[pos] !== '') return;
 
-    async function fazerJogada(posicao) {
-      if (gameOver || esperandoResposta) return;
+      board[pos] = currentPlayer;
+      renderBoard();
 
-      esperandoResposta = true;
-
-      try {
-        const res = await fetch(`http://localhost:8080/api/games/${gameId}/move`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({ position: posicao })
-        });
-
-        if (!res.ok) {
-          const erro = await res.json();
-          mensagem.textContent = erro.message || "Erro ao jogar.";
-          esperandoResposta = false;
-          return;
-        }
-
-        await carregarEstado();
-      } catch (err) {
-        mensagem.textContent = "Erro ao fazer jogada.";
-        console.error(err);
+      if (checkWin(currentPlayer)) {
+        mensagemEl.textContent = `🏆 ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent} venceu a rodada!`;
+        gameOver = true;
+        updateScore(currentPlayer);
+        btnNextRound.disabled = false;
+      } else if (board.every(c => c !== '')) {
+        mensagemEl.textContent = '😼 Empate na rodada!';
+        gameOver = true;
+        btnNextRound.disabled = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        mensagemEl.textContent = `Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
       }
-
-      esperandoResposta = false;
+      updateScoreDisplay();
     }
 
-    carregarEstado();
-    setInterval(carregarEstado, 3000); // Atualiza o jogo a cada 3s
+    function checkWin(player) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return wins.some(combo => combo.every(i => board[i] === player));
+    }
+
+    function updateScore(player) {
+      if (player === 'X') scoreX++;
+      else scoreO++;
+    }
+
+    function updateScoreDisplay() {
+      scoreXEl.textContent = scoreX;
+      scoreOEl.textContent = scoreO;
+    }
+
+    function nextRound() {
+      if (rodadaAtual >= totalRodadas) {
+        mensagemEl.textContent = '🎉 Jogo finalizado! Recarregue ou clique em "Encerrar Jogo" para jogar de novo.';
+        btnNextRound.disabled = true;
+        return;
+      }
+      rodadaAtual++;
+      rodadaAtualEl.textContent = rodadaAtual;
+      board = Array(9).fill('');
+      gameOver = false;
+      currentPlayer = rodadaAtual % 2 === 1 ? 'X' : 'O';
+      mensagemEl.textContent = `Rodada ${rodadaAtual} - Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
+      renderBoard();
+      btnNextRound.disabled = true;
+    }
+
+    function endGame() {
+      menuEl.style.display = 'block';
+      gameEl.style.display = 'none';
+      mensagemEl.textContent = '';
+    }
   </script>
 </body>
 </html>

@@ -22,12 +22,12 @@
   </div>
 
   <script type="module">
-    import { getUsername, logout } from './auth.js';
+    import { getUsername, logout as logoutModule } from './auth.js';
 
     document.getElementById("boasVindas").textContent = `Olá, ${getUsername()}! 🐱`;
 
-    window.logout = () => {
-      logout();
+    window.logout = async function() {
+      await logoutModule();
       window.location.href = "login.html";
     };
   </script>
