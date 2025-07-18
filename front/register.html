@@ -37,45 +37,50 @@
         />
       </div>
       
-      <button type="button" onclick="register()">Registrar</button>
+      <button type="button" id="btn-register">Registrar</button>
     </form>
 
     <p>Já tem conta? <a href="login.html" style="color: #f9a825;">Faça login</a></p>
     <div id="mensagem" style="margin-top: 20px;"></div>
   </div>
 
-  <script type="module">
-    import { registerAPI } from './api.js';
-    import { setToken } from './auth.js';
+  <script>
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const btnRegister = document.getElementById('btn-register');
+    const API_BASE_URL = 'https://tictactoe-ed8r.onrender.com/api';
 
-    async function register() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("mensagem");
+    btnRegister.addEventListener('click', handleRegister);
 
-      msg.textContent = "";
+    async function handleRegister() {
+      const username = usernameInput.value;
+      const password = passwordInput.value;
 
       if (!username || !password) {
-        msg.textContent = "Preencha todos os campos!";
-        msg.style.color = "#ff5252";
+        showResponse(authResponse, 'Por favor, preencha usuário e senha', 'error');
         return;
       }
-
+          
       try {
-        await registerAPI(username, password);
-        msg.textContent = "Registro concluído! Redirecionando...";
-        msg.style.color = "#00e676";
-
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 2000);
-      } catch (err) {
-        msg.textContent = "Erro ao registrar. Tente outro nome.";
-        msg.style.color = "#ff5252";
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            console.log('Registro bem-sucedido:', data);
+          } else {
+            console.log(`Erro: ${data.message || 'Falha no registro'}`, 'error');
+          }
+      } catch (error) {
+        console.log(`Erro: ${error.message}`, 'error');
       }
     }
-
-    window.register = register;
   </script>
 </body>
 </html>

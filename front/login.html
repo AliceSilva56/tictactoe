@@ -38,40 +38,55 @@
         />
       </div>
 
-      <button type="button" onclick="login()">Entrar</button>
+      <button type="button" id="btn-login">Entrar</button>
     </form>
 
     <p>Não tem conta? <a href="register.html" style="color: #f9a825;">Registre-se aqui</a></p>
     <div id="mensagem" style="margin-top: 20px;"></div>
   </div>
 
-  <script type="module">
-    import { loginAPI } from './api.js';
-    import { setToken } from './auth.js';
+  <script>
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const btnLogin = document.getElementById('btn-login');
+    const API_BASE_URL = 'https://tictactoe-ed8r.onrender.com/api';
+    btnLogin.addEventListener('click', handleLogin);
 
-    async function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("mensagem");
 
-      msg.textContent = "";
-
+    async function handleLogin() {
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+      
       if (!username || !password) {
-        msg.textContent = "Preencha todos os campos!";
-        msg.style.color = "#ff5252";
+        showResponse(authResponse, 'Por favor, preencha usuário e senha', 'error');
         return;
       }
-
+      
       try {
-        const { token } = await loginAPI(username, password);
-        setToken(token);
-        window.location.href = "home.html";
-      } catch (err) {
-        msg.textContent = "Usuário ou senha inválidos.";
-        msg.style.color = "#ff5252";
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+          
+        const data = await response.json();
+          
+        if (response.ok) {
+          currentToken = data.token;
+          currentUsername = username;
+          console.log(`Login bem-sucedido! Token: ${data.token}`, 'success');
+          window.location.href = "home.html";
+        } else {
+          console.log(`Erro: ${data.message || 'Falha no login'}`, 'error');
+        }
+
+      } catch (error) {
+        showResponse(`Erro: ${error.message}`, 'error');
       }
     }
-
+    
     window.login = login;
   </script>
 </body>
