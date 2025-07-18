@@ -14,7 +14,6 @@
     <h1>🐾 Login dos Gatos</h1>
 
     <form autocomplete="off" novalidate>
-      <!-- Campos falsos pra bloquear autofill -->
       <input type="text" name="fakeusernameremembered" autocomplete="off" style="display:none" />
       <input type="password" name="fakepasswordremembered" autocomplete="off" style="display:none" />
 
@@ -77,6 +76,7 @@
           currentToken = data.token;
           currentUsername = username;
           console.log(`Login bem-sucedido! Token: ${data.token}`, 'success');
+            localStorage.setItem('authToken', data.token);
           window.location.href = "home.html";
         } else {
           console.log(`Erro: ${data.message || 'Falha no login'}`, 'error');
@@ -86,7 +86,6 @@
         showResponse(`Erro: ${error.message}`, 'error');
       }
     }
-    
     window.login = login;
   </script>
 </body>

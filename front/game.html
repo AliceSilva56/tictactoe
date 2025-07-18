@@ -4,17 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jogo da Velha dos Gatos 🐾</title>
-  <link rel="icon" type="image/x-icon" href="assets/icon.png" />
-  <link rel="stylesheet" href="styleDarkTech.css" />
-
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>😺</text></svg>">
   <style>
-
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
     body {
-  padding-top: 60px; /* Espaço no topo */
-  box-sizing: border-box;
-}
-
-    .loader {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    
+    #loader {
       font-size: 2rem;
       color: #00CFFF;
       text-shadow: 0 0 8px #00CFFF;
@@ -30,260 +39,521 @@
 
     #menu, #game {
       display: none;
+      background: rgba(16, 22, 36, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 40px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-.placar-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
-  width: 100%;
-  max-width: 600px;
-}
-
-.placar {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 1.1rem;
-}
-
-#mensagem {
-  flex: 1;
-  color: #f9a825;
-  font-weight: bold;
-  text-shadow: 0 0 6px #f9a825aa;
-  min-width: 150px;
-  text-align: right;
-}
-
-.tabuleiro {
-  display: grid;
-  grid-template-columns: repeat(3, 100px);
-  grid-gap: 10px;
-  justify-content: center;
-  margin: 20px 0;
-}
-
-.tabuleiro div {
-  width: 100px;
-  height: 100px;
- background: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2.5rem;
-  border: 2px solid #00CFFF;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 0 6px #00cfffaa inset;
-  transition: background-color 0.3s ease;
-}
-
-.tabuleiro div.disabled {
-  pointer-events: none;
-  opacity: 0.6;
-   background-color: #111;
-  color: #004455;
-  cursor: default;
-  box-shadow: none;
-}
-.tabuleiro div:hover {
-  background-color: #005f7f;
-}
-
+    
+    #menu::before, #game::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        transparent, 
+        rgba(255, 193, 7, 0.4), 
+        transparent 30%
+      );
+      animation: rotate 6s linear infinite;
+      z-index: -1;
+    }
+    
+    @keyframes rotate {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+      color: #ffc107;
+      text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+      position: relative;
+    }
+    
+    h1::after {
+      content: "🐾";
+      position: absolute;
+      right: -35px;
+      top: -5px;
+      font-size: 1.8rem;
+      animation: pulse 2s infinite;
+    }
+    
+    input {
+      width: 100%;
+      background: rgba(10, 15, 25, 0.6);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 8px;
+      padding: 15px 20px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    
+    input:focus {
+      border-color: #ffc107;
+      box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+    }
+    
+    input::placeholder {
+      color: #8a9aad;
+    }
+    
+    button {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #ffc107, #ff9800);
+      color: #2c1900;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+    }
+    
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+    
+    button:hover::before {
+      left: 100%;
+    }
+    
+    .placar-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 600px;
+    }
+    
+    .placar {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 1.1rem;
+    }
+    
+    #mensagem {
+      flex: 1;
+      color: #f9a825;
+      font-weight: bold;
+      text-shadow: 0 0 6px #f9a825aa;
+      min-width: 150px;
+      text-align: right;
+    }
+    
+    .tabuleiro {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .tabuleiro div {
+      width: 100px;
+      height: 100px;
+      background: rgba(10, 15, 25, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      border: 2px solid #00CFFF;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 6px #00cfffaa inset;
+      transition: background-color 0.3s ease;
+    }
+    
+    .tabuleiro div.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+      background-color: #111;
+      color: #004455;
+      cursor: default;
+      box-shadow: none;
+    }
+    
+    .tabuleiro div:hover {
+      background-color: #005f7f;
+    }
+    
+    .cat-paw {
+      position: absolute;
+      font-size: 1.5rem;
+      opacity: 0.2;
+      z-index: -1;
+    }
+    
+    .paw-1 { top: 10%; left: 15%; }
+    .paw-2 { top: 20%; right: 20%; }
+    .paw-3 { bottom: 15%; left: 25%; }
+    .paw-4 { bottom: 25%; right: 15%; }
+    
+    @media (max-width: 500px) {
+      #menu, #game {
+        padding: 30px 20px;
+        width: 95%;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .tabuleiro {
+        grid-template-columns: repeat(3, 80px);
+      }
+      
+      .tabuleiro div {
+        width: 80px;
+        height: 80px;
+      }
+    }
   </style>
 </head>
 <body>
-
+  <!-- Marcas de patinhas decorativas -->
+  <div class="cat-paw paw-1">🐾</div>
+  <div class="cat-paw paw-2">🐾</div>
+  <div class="cat-paw paw-3">🐾</div>
+  <div class="cat-paw paw-4">🐾</div>
+  
   <!-- Loader -->
   <div id="loader" class="loader">⌛ Carregando...</div>
 
-  <!-- Tela de Escolha de Jogadores e Rodadas -->
+  <!-- Tela de Escolha de Jogadores -->
   <div id="menu">
     <h1>🐾 Jogo da Velha dos Gatos 🐾</h1>
-    <input type="text" id="nomeX" placeholder="Nome do Gato 1 𓃠" />
-    <input type="text" id="nomeO" placeholder="Nome do Gato 2 🐈‍⬛" />
-
-    <p>Escolha o número de rodadas:</p>
-    <button onclick="startGame(3)">3 Rodadas</button>
-    <button onclick="startGame(5)">5 Rodadas</button>
+    <input type="text" id="opponent" placeholder="Nome do oponente 🐱" />
+    
+    <p>Escolha sua peça:</p>
+    <button onclick="startGame('X')">Gato Branco 𓃠</button>
+    <button onclick="startGame('O')">Gato Preto 🐈‍⬛</button>
     <br><br>
+    <button id="btnLoadPending" style="display:none">🐾 Carregar Jogo Pendente</button>
     <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
   </div>
 
-  <!-- Tela da Partida -->
   <div id="game">
-  <div class="placar-wrapper">
-    <div class="placar">
-      <div><span id="nomeDisplayX">𓃠 Gato 1</span>: <span id="scoreX">0</span></div>
-      <div><span id="nomeDisplayO">🐈‍⬛ Gato 2</span>: <span id="scoreO">0</span></div>
-      <div>Rodada: <span id="rodadaAtual">1</span>/<span id="totalRodadas">3</span></div>
+    <div class="placar-wrapper">
+      <div class="placar">
+        <div id="playerDisplay">Jogador: Carregando...</div>
+        <div id="opponentDisplay">Oponente: Carregando...</div>
+      </div>
+      <div id="mensagem">⌛ Aguardando...</div>
     </div>
-    <div id="mensagem">⌛ Aguardando...</div>
-  </div>
-
 
     <div class="tabuleiro" id="tabuleiro"></div>
     
-    <button id="btnNextRound" onclick="nextRound()" disabled>Próxima Rodada</button>
-    <button onclick="endGame()" style="margin-top:10px; background:#f44336; color:#fff;">Encerrar Jogo</button>
+    <button id="btnRestart" onclick="restartGame()">Reiniciar Jogo</button>
+    <button onclick="endGame()" style="margin-top:10px; background:rgba(244, 67, 54, 0.8);">Encerrar Jogo</button>
   </div>
 
   <script>
-    // Mostra loader por 1.5s antes de exibir o menu
-    window.addEventListener('DOMContentLoaded', () => {
-      const loader = document.getElementById('loader');
-      const menu = document.getElementById('menu');
-
-      setTimeout(() => {
-        loader.style.display = 'none';
-        menu.style.display = 'block';
-      }, 1500);
-    });
-
+    // Constantes
+    const API_BASE_URL = 'https://tictactoe-ed8r.onrender.com/api';
+    
+    // Elementos DOM
+    const loader = document.getElementById('loader');
     const menuEl = document.getElementById('menu');
     const gameEl = document.getElementById('game');
     const tabuleiroEl = document.getElementById('tabuleiro');
     const mensagemEl = document.getElementById('mensagem');
-    const btnNextRound = document.getElementById('btnNextRound');
-
-    const nomeXInput = document.getElementById('nomeX');
-    const nomeOInput = document.getElementById('nomeO');
-
-    const nomeDisplayX = document.getElementById('nomeDisplayX');
-    const nomeDisplayO = document.getElementById('nomeDisplayO');
-
-    const scoreXEl = document.getElementById('scoreX');
-    const scoreOEl = document.getElementById('scoreO');
-
-    const rodadaAtualEl = document.getElementById('rodadaAtual');
-    const totalRodadasEl = document.getElementById('totalRodadas');
-
-    let rodadaAtual = 1;
-    let totalRodadas = 3;
-    let scoreX = 0;
-    let scoreO = 0;
-    let currentPlayer = 'X';
+    const btnLoadPending = document.getElementById('btnLoadPending');
+    const opponentInput = document.getElementById('opponent');
+    const playerDisplay = document.getElementById('playerDisplay');
+    const opponentDisplay = document.getElementById('opponentDisplay');
+    
+    // Estado do jogo
+    let currentToken = null;
+    let currentUsername = null;
+    let currentGameId = null;
+    let currentPlayer = null; // 'X' ou 'O'
+    let gameActive = false;
     let board = Array(9).fill('');
-    let gameOver = false;
 
-    function startGame(rodadas) {
-      const nomeX = nomeXInput.value.trim() || '𓃠 Gato 1';
-      const nomeO = nomeOInput.value.trim() || '🐈‍⬛ Gato 2';
+    // Mostrar loader por 1.5s antes de exibir o menu
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Recuperar token e username do localStorage
+        currentToken = localStorage.getItem('authToken');
+        currentUsername = localStorage.getItem('username');
+        
+        if (!currentToken || !currentUsername) {
+          throw new Error('Usuário não autenticado');
+        }
+        
+        // Verificar jogos pendentes
+        await checkPendingGames();
+      } catch (error) {
+        mensagemEl.textContent = 'Erro: ' + error.message;
+        mensagemEl.style.color = '#e74c3c';
+      } finally {
+        setTimeout(() => {
+          loader.style.display = 'none';
+          menuEl.style.display = 'block';
+        }, 1500);
+      }
+    });
 
-      nomeDisplayX.textContent = nomeX;
-      nomeDisplayO.textContent = nomeO;
+    async function checkPendingGames() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/pending`, {
+          headers: {
+            'Authorization': `Bearer ${currentToken}`
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.length > 0) {
+          const pendingGame = data[0];
+          btnLoadPending.style.display = 'block';
+          btnLoadPending.textContent = `🐾 Carregar jogo com ${pendingGame.playerX === currentUsername ? pendingGame.playerO : pendingGame.playerX}`;
+          
+          btnLoadPending.onclick = () => {
+            loadGame(pendingGame.id);
+          };
+        }
+      } catch (error) {
+        console.error('Erro ao verificar jogos pendentes:', error);
+      }
+    }
+ 
+    async function loadGame(gameId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
+          headers: {
+            'Authorization': `Bearer ${currentToken}`
+          }
+        });
+        
+        const game = await response.json();
+        
+        if (response.ok) {
+          currentGameId = game.id;
+          gameActive = !game.gameOver;
+          board = game.boardState.split('');
 
-      rodadaAtual = 1;
-      totalRodadas = rodadas;
-      scoreX = 0;
-      scoreO = 0;
-      currentPlayer = 'X';
-      board = Array(9).fill('');
-      gameOver = false;
+          currentPlayer = (game.playerX === currentUsername) ? 'X' : 'O';
+ 
+          playerDisplay.textContent = `Você: ${currentUsername} (${currentPlayer === 'X' ? 'Gato Branco 𓃠' : 'Gato Preto 🐈‍⬛'})`;
+          opponentDisplay.textContent = `Oponente: ${game.playerX === currentUsername ? game.playerO : game.playerX}`;
 
-      scoreXEl.textContent = scoreX;
-      scoreOEl.textContent = scoreO;
-      rodadaAtualEl.textContent = rodadaAtual;
-      totalRodadasEl.textContent = totalRodadas;
-      mensagemEl.textContent = `${nomeX} começa jogando!`;
+          renderBoard();
+          
+          if (game.gameOver) {
+            mensagemEl.textContent = `Jogo encerrado! ${game.winner ? 'Vencedor: ' + game.winner : 'Empate!'}`;
+            gameActive = false;
+          } else {
+            mensagemEl.textContent = `Sua vez! Você é o ${currentPlayer === 'X' ? 'Gato Branco 𓃠' : 'Gato Preto 🐈‍⬛'}`;
+          }
+          
+          menuEl.style.display = 'none';
+          gameEl.style.display = 'block';
+        } else {
+          throw new Error(game.message || 'Falha ao carregar jogo');
+        }
+      } catch (error) {
+        mensagemEl.textContent = 'Erro: ' + error.message;
+        mensagemEl.style.color = '#e74c3c';
+      }
+    }
+    
+    async function startGame(playerSymbol) {
+      const opponent = opponentInput.value.trim();
+      if (!opponent) {
+        mensagemEl.textContent = 'Por favor, informe o nome do oponente';
+        mensagemEl.style.color = '#e74c3c';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/start?opponentUsername=${opponent}`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          currentGameId = data.gameId;
+          gameActive = true;
+          currentPlayer = playerSymbol;
+          board = Array(9).fill('');
+          
+          playerDisplay.textContent = `Você: ${currentUsername} (${currentPlayer === 'X' ? 'Gato Branco 𓃠' : 'Gato Preto 🐈‍⬛'})`;
+          opponentDisplay.textContent = `Oponente: ${opponent}`;
 
-      renderBoard();
+          renderBoard();
+          
+          mensagemEl.textContent = `Jogo iniciado! Você é o ${currentPlayer === 'X' ? 'Gato Branco 𓃠' : 'Gato Preto 🐈‍⬛'}`;
+          mensagemEl.style.color = '#f9a825';
 
-      menuEl.style.display = 'none';
-      gameEl.style.display = 'block';
-      btnNextRound.disabled = true;
+          menuEl.style.display = 'none';
+          gameEl.style.display = 'block';
+        } else {
+          throw new Error(data.message || 'Falha ao iniciar jogo');
+        }
+      } catch (error) {
+        mensagemEl.textContent = 'Erro: ' + error.message;
+        mensagemEl.style.color = '#e74c3c';
+      }
+    }
+    
+    async function makeMove(position) {
+      if (!gameActive || board[position] !== '') return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${currentGameId}/move`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({ position })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          board = data.board.split('');
+          renderBoard();
+          
+          if (data.gameOver) {
+            gameActive = false;
+            if (data.winner) {
+              mensagemEl.textContent = `🏆 ${data.winner === currentUsername ? 'Você venceu!' : 'Oponente venceu!'}`;
+              mensagemEl.style.color = data.winner === currentUsername ? '#2ecc71' : '#e74c3c';
+            } else {
+              mensagemEl.textContent = '😺 Empate!';
+              mensagemEl.style.color = '#f9a825';
+            }
+          } else {
+            mensagemEl.textContent = `Aguardando jogada de ${data.nextPlayer === currentUsername ? 'você' : 'oponente'}...`;
+          }
+        } else {
+          throw new Error(data.message || 'Falha na jogada');
+        }
+      } catch (error) {
+        mensagemEl.textContent = 'Erro: ' + error.message;
+        mensagemEl.style.color = '#e74c3c';
+      }
     }
 
     function renderBoard() {
       tabuleiroEl.innerHTML = '';
       board.forEach((cell, idx) => {
         const cellEl = document.createElement('div');
+        
         if (cell === 'X') {
-  const img = document.createElement('img');
-  img.src = 'assets/gatoB.png';
-  img.alt = 'Gato Branco';
-  img.style.width = '50px';
-  cellEl.appendChild(img);
-} else if (cell === 'O') {
-  const img = document.createElement('img');
-  img.src = 'assets/gatoP.png';
-  img.alt = 'Gato Preto';
-  img.style.width = '50px';
-  cellEl.appendChild(img);
-}
-
-        if (cell !== '' || gameOver) {
+          cellEl.innerHTML = '𓃠'; 
+          cellEl.style.color = '#ffffff';
+          cellEl.style.fontSize = '3rem';
+        } else if (cell === 'O') {
+          cellEl.innerHTML = '🐈‍⬛'; 
+          cellEl.style.fontSize = '3rem';
+        }
+        
+        if (cell !== '' || !gameActive) {
           cellEl.classList.add('disabled');
         }
-        cellEl.addEventListener('click', () => makeMove(idx));
+        
+        if (gameActive && cell === '') {
+          cellEl.addEventListener('click', () => makeMove(idx));
+        }
+        
         tabuleiroEl.appendChild(cellEl);
       });
     }
-
-    function makeMove(pos) {
-      if (gameOver || board[pos] !== '') return;
-
-      board[pos] = currentPlayer;
-      renderBoard();
-
-      if (checkWin(currentPlayer)) {
-        mensagemEl.textContent = `🏆 ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent} venceu a rodada!`;
-        gameOver = true;
-        updateScore(currentPlayer);
-        btnNextRound.disabled = false;
-      } else if (board.every(c => c !== '')) {
-        mensagemEl.textContent = '😼 Empate na rodada!';
-        gameOver = true;
-        btnNextRound.disabled = false;
-      } else {
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        mensagemEl.textContent = `Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
+    
+    async function restartGame() {
+      if (!currentGameId) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/games/${currentGameId}/restart`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${currentToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          board = Array(9).fill('');
+          gameActive = true;
+          renderBoard();
+          mensagemEl.textContent = `Jogo reiniciado! Você é o ${currentPlayer === 'X' ? 'Gato Branco 𓃠' : 'Gato Preto 🐈‍⬛'}`;
+          mensagemEl.style.color = '#f9a825';
+        } else {
+          throw new Error(data.message || 'Falha ao reiniciar jogo');
+        }
+      } catch (error) {
+        mensagemEl.textContent = 'Erro: ' + error.message;
+        mensagemEl.style.color = '#e74c3c';
       }
-      updateScoreDisplay();
     }
-
-    function checkWin(player) {
-      const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      return wins.some(combo => combo.every(i => board[i] === player));
-    }
-
-    function updateScore(player) {
-      if (player === 'X') scoreX++;
-      else scoreO++;
-    }
-
-    function updateScoreDisplay() {
-      scoreXEl.textContent = scoreX;
-      scoreOEl.textContent = scoreO;
-    }
-
-    function nextRound() {
-      if (rodadaAtual >= totalRodadas) {
-        mensagemEl.textContent = '🎉 Jogo finalizado! Recarregue ou clique em "Encerrar Jogo" para jogar de novo.';
-        btnNextRound.disabled = true;
-        return;
-      }
-      rodadaAtual++;
-      rodadaAtualEl.textContent = rodadaAtual;
-      board = Array(9).fill('');
-      gameOver = false;
-      currentPlayer = rodadaAtual % 2 === 1 ? 'X' : 'O';
-      mensagemEl.textContent = `Rodada ${rodadaAtual} - Vez de ${currentPlayer === 'X' ? nomeDisplayX.textContent : nomeDisplayO.textContent}`;
-      renderBoard();
-      btnNextRound.disabled = true;
-    }
-
+    
     function endGame() {
-      menuEl.style.display = 'block';
+      currentGameId = null;
+      gameActive = false;
+      board = Array(9).fill('');
       gameEl.style.display = 'none';
-      mensagemEl.textContent = '';
+      menuEl.style.display = 'block';
+      btnLoadPending.style.display = 'none';
+      opponentInput.value = '';
+      checkPendingGames();
     }
   </script>
 </body>

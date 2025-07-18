@@ -1,4 +1,3 @@
-<!-- frontend/games.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,6 +6,19 @@
   <title>Partidas Anteriores - Jogo da Velha 🐾</title>
   <link rel="stylesheet" href="styleDarkTech.css" />
   <link rel="icon" type="image/x-icon" href="assets/icon.png" />
+  <style>
+    .partida-item {
+      margin-bottom: 15px; 
+      padding: 10px; 
+      background-color: #424549; 
+      border-radius: 12px;
+    }
+    .token {
+      font-weight: bold;
+    }
+    .token-x { color: #4EC9B0; }
+    .token-o { color: #F47D7D; }
+  </style>
 </head>
 <body>
   <div id="menu">
@@ -15,32 +27,63 @@
     <button onclick="window.location.href='home.html'">🔙 Voltar ao Menu</button>
   </div>
 
-  <script type="module">
-    import { getToken } from './auth.js';
-
+  <script>
     const lista = document.getElementById("listaPartidas");
+    const API_BASE_URL = "https://tictactoe-ed8r.onrender.com/api";
 
     async function carregarPartidas() {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        lista.innerHTML = "<p>Você precisa estar logado. Redirecionando...</p>";
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        return;
+      }
+
       try {
-        const res = await fetch("http://localhost:8080/api/games", {
-          headers: { Authorization: `Bearer ${getToken()}` }
+        const res = await fetch(`${API_BASE_URL}/games`, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
+        // Tratar respostas vazias (204 No Content)
+        if (res.status === 204) {
+          lista.innerHTML = "<p>Você ainda não participou de nenhuma partida.</p>";
+          return;
+        }
+
         const data = await res.json();
+        
         if (!data.length) {
           lista.innerHTML = "<p>Você ainda não participou de nenhuma partida.</p>";
           return;
         }
 
-        lista.innerHTML = data.map(game => `
-          <div style="margin-bottom: 15px; padding: 10px; background-color: #424549; border-radius: 12px;">
-            <p><strong>ID:</strong> ${game.id}</p>
-            <p><strong>${game.playerX}</strong> (X) vs <strong>${game.playerO}</strong> (O)</p>
-            <p><strong>Vencedor:</strong> ${game.winner || 'Empate'}</p>
-            <p><strong>Data:</strong> ${new Date(game.createdAt).toLocaleString()}</p>
-            <button onclick="abrirJogo(${game.id})">▶️ Ver Partida</button>
-          </div>
-        `).join('');
+        lista.innerHTML = data.map(game => {
+          // Formatar o vencedor com símbolos de gatos
+          let vencedorTexto = 'Empate';
+          if (game.winner) {
+            vencedorTexto = (game.winner === game.playerX) 
+              ? `Gato Branco 𓃠 (X)` 
+              : `Gato Preto 🐈‍⬛ (O)`;
+          }
+
+          // Formatar jogadores com símbolos
+          const jogadorX = `${game.playerX} <span class="token token-x">(𓃠 X)</span>`;
+          const jogadorO = `${game.playerO} <span class="token token-o">(🐈‍⬛ O)</span>`;
+          
+          return `
+            <div class="partida-item">
+              <p><strong>ID:</strong> ${game.id}</p>
+              <p><strong>${jogadorX}</strong> vs <strong>${jogadorO}</strong></p>
+              <p><strong>Vencedor:</strong> ${vencedorTexto}</p>
+              <p><strong>Data:</strong> ${new Date(game.createdAt).toLocaleString()}</p>
+              <p><strong>Estado:</strong> ${game.gameOver ? 'Finalizado' : 'Em andamento'}</p>
+              <button onclick="abrirJogo(${game.id})">▶️ Ver Partida</button>
+            </div>
+          `;
+        }).join('');
       } catch (err) {
         lista.innerHTML = "<p>Erro ao carregar partidas.</p>";
         console.error(err);
@@ -50,7 +93,6 @@
     window.abrirJogo = (id) => {
       window.location.href = `game.html?id=${id}`;
     };
-
     carregarPartidas();
   </script>
 </body>

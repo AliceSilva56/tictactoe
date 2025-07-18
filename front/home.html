@@ -36,11 +36,23 @@
 
     document.getElementById("boasVindas").textContent = `Olá, ${getUsername()}! 🐱`;
 
+    function getToken() {
+      return localStorage.getItem('authToken');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = getToken();
+      if (token) {
+        console.log("Token encontrado:", token);
+      } else {
+        console.log("Token não encontrado. Faça login novamente.");
+      }
+    });
+
     window.logout = async function () {
       await logoutModule();
       window.location.href = "login.html";
     };
   </script>
 </body>
-
 </html>
